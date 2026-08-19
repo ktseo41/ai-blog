@@ -1,0 +1,96 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import CopyPageButton from '../components/CopyPageButton.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Site from './Site.astro';
+
+type Props = CollectionEntry<'blog'>['data'] & {
+	/** 원본 Markdown 본문. Copy page 버튼이 LLM용으로 복사한다. */
+	body?: string;
+};
+
+const { title, description, created_at, updated_at, heroImage, body = '' } = Astro.props;
+
+// updated_at이 created_at보다 실제로 뒤일 때만 "수정"을 노출한다.
+const hasUpdate = updated_at != null && updated_at.valueOf() > created_at.valueOf();
+
+// Claude docs "Copy page as Markdown for LLMs"와 같이 제목·요약을 앞에 붙인 원문.
+const pageMarkdown = [`# ${title}`, '', description, '', body.trimEnd(), ''].join('\n');
+---
+
+<Site title={title} description={description}>
+	<article>
+		<div class="title">
+			<h1>{title}</h1>
+			<div class="meta">
+				<div class="meta-dates">
+					<span class="meta-item">
+						<span class="meta-label">작성</span>
+						<FormattedDate date={created_at} withTime />
+					</span>
+					{
+						hasUpdate && (
+							<span class="meta-item last-updated-on">
+								<span class="meta-label">수정</span>
+								<FormattedDate date={updated_at} withTime />
+							</span>
+						)
+					}
+				</div>
+				<CopyPageButton markdown={pageMarkdown} />
+			</div>
+		</div>
+		<div class="hero-image">
+			{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+		</div>
+		<slot />
+	</article>
+</Site>
+
+<style>
+	.hero-image img {
+		display: block;
+		margin: 0 0 var(--space-4) 0;
+		border-radius: var(--radius-m);
+	}
+	.title {
+		margin-bottom: var(--space-5);
+		padding-bottom: var(--space-3);
+		border-bottom: 1px solid var(--border);
+	}
+	.title h1 {
+		margin: 0 0 var(--space-2) 0;
+	}
+	.meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2) var(--space-3);
+		color: rgb(var(--gray));
+		font-size: 0.85em;
+	}
+	.meta-dates {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-1) var(--space-3);
+		min-width: 0;
+	}
+	.meta-item {
+		display: inline-flex;
+		align-items: baseline;
+		gap: var(--space-2);
+	}
+	.meta-label {
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: 0.85em;
+		letter-spacing: 0.02em;
+		color: rgb(var(--gray-dark));
+	}
+	.last-updated-on .meta-label {
+		color: var(--accent);
+	}
+</style>

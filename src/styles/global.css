@@ -1,0 +1,294 @@
+/*
+  design-direction.md 기반 전역 스타일.
+  원칙: 컴팩트 + 가독 (본문 16–17px은 지킴), radius 0/2/4px, 뉴트럴 + 액센트 1색, 1px 보더.
+  원본 템플릿(Bear Blog 파생, MIT)의 구조를 토큰 기반으로 재작성.
+ */
+
+:root {
+	--radius-0: 0;
+	--radius-s: 2px;
+	--radius-m: 4px;
+
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 24px;
+	--space-6: 32px;
+
+	--accent: #1d4ed8;
+	--black: 24, 26, 30;
+	--gray: 96, 105, 120;
+	--gray-light: 229, 231, 235;
+	--gray-dark: 41, 44, 50;
+	--bg: #fafafa;
+	--border: rgb(var(--gray-light));
+	--content-width: 900px;
+
+	--font-body: var(--font-nanum-gothic);
+	--font-heading: var(--font-nanum-square);
+}
+body {
+	font-family: var(--font-body);
+	margin: 0;
+	padding: 0;
+	text-align: left;
+	background: var(--bg);
+	word-break: keep-all;
+	overflow-wrap: break-word;
+	color: rgb(var(--gray-dark));
+	font-size: 16px;
+	line-height: 1.7;
+}
+main {
+	width: var(--content-width);
+	max-width: calc(100% - 2em);
+	margin: auto;
+	padding: var(--space-5) var(--space-4) var(--space-6);
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-heading);
+	margin: var(--space-6) 0 var(--space-3) 0;
+	color: rgb(var(--black));
+	line-height: 1.3;
+}
+h1 {
+	font-size: 1.5em;
+	font-weight: 800;
+	margin-top: 0;
+}
+h2 {
+	font-size: 1.25em;
+	font-weight: 800;
+}
+h3 {
+	font-size: 1.1em;
+	font-weight: 700;
+}
+h4,
+h5,
+h6 {
+	font-size: 1em;
+	font-weight: 700;
+}
+strong,
+b {
+	font-weight: 700;
+}
+a {
+	color: var(--accent);
+}
+a:hover {
+	text-decoration-thickness: 2px;
+}
+p {
+	margin: 0 0 0.875em 0;
+}
+ul,
+ol {
+	padding-left: 1.5em;
+	margin: 0 0 0.875em 0;
+}
+li {
+	margin: 0;
+}
+textarea,
+input {
+	font-size: 16px;
+}
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 0 0 1em 0;
+	font-size: 0.95em;
+	line-height: 1.5;
+}
+th,
+td {
+	border: 1px solid var(--border);
+	padding: 6px 10px;
+	text-align: left;
+}
+th {
+	background: rgba(var(--gray-light), 0.4);
+	font-weight: 700;
+}
+/* 마지막 열은 서술형(후기 요지·조건·사유)인 경우가 많아 최소 너비를 보장 —
+   짧은 열들이 남는 폭을 다 가져가 서술 열이 세로로 길어지는 것을 막는다 */
+th:last-child,
+td:last-child {
+	min-width: 20rem;
+}
+/* 부연·근거는 핵심 아래 작은 회색 블록으로 강등 — 위계를 확실히 낮추되
+   (색·크기) 읽을 수는 있는 선. 표 셀·목록·표 주석 문단에 동일 적용해
+   강등 스타일을 문서 전체에서 통일한다 */
+td small,
+li small,
+p small {
+	display: block;
+	margin-top: 4px;
+	font-size: 0.82em;
+	line-height: 1.45;
+	color: rgb(var(--gray));
+}
+/* 웹툰 티어 표(장르 태그를 담은 표)에만 적용 — 다른 글의 5열 표엔 영향 없음.
+   넓은 화면에서 열 너비를 고정해 세 티어 표가 같은 그리드를 쓰고,
+   숫자·플랫폼·장르 열을 내용에 맞게 타이트하게 줄여 서술 열(후기 요지·조건)이
+   나머지 폭을 모두 가져가게 한다 */
+@media (min-width: 60rem) {
+	table:has(.wt-tags) {
+		table-layout: fixed;
+	}
+	table:has(.wt-tags) th:nth-child(1) {
+		width: 28px;
+	}
+	table:has(.wt-tags) th:nth-child(2) {
+		width: 150px;
+	}
+	table:has(.wt-tags) th:nth-child(3) {
+		width: 96px;
+	}
+	table:has(.wt-tags) th:nth-child(4) {
+		width: 116px;
+	}
+}
+/* 셀 위쪽 정렬, # 가운데 회색, 플랫폼은 한 줄 유지(카카오페이지 기준) */
+table:has(.wt-tags) th,
+table:has(.wt-tags) td {
+	vertical-align: top;
+}
+table:has(.wt-tags) td:nth-child(1) {
+	text-align: center;
+	color: rgb(var(--gray));
+}
+table:has(.wt-tags) td:nth-child(3) {
+	white-space: nowrap;
+}
+/* 장르 — 세로로 쌓이는 태그 칩. 사용자에게 익숙한 장르 구분을 시각적으로 먼저 준다 */
+.wt-tags {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: flex-start;
+}
+.wt-tags span {
+	padding: 1px 8px;
+	font-size: 0.82em;
+	line-height: 1.55;
+	background: rgba(var(--gray-light), 0.7);
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	color: rgb(var(--black));
+}
+/* 후기 요지·조건 — 문장별 리스트로 스캔 가능하게 */
+.wt-notes {
+	margin: 0;
+	padding-left: 1.05em;
+	list-style: disc;
+}
+.wt-notes li {
+	margin: 0 0 3px 0;
+}
+.wt-notes li:last-child {
+	margin-bottom: 0;
+}
+/* 표 셀 안에서 날짜 등 한 덩어리로 읽혀야 하는 값의 줄바꿈을 막는다 */
+.nowrap {
+	white-space: nowrap;
+}
+/* 숫자 중심 표 — 서술 열 min-width 예외, 표 숫자 정렬 */
+table.nums {
+	font-variant-numeric: tabular-nums;
+	font-size: 0.9em;
+}
+table.nums th:last-child,
+table.nums td:last-child {
+	min-width: 0;
+}
+table.nums th,
+table.nums td {
+	white-space: nowrap;
+}
+/* 합계 행 — 개별 종목 행과 위계를 나눈다 */
+table.nums tfoot td {
+	font-weight: 700;
+	background: rgba(var(--gray-light), 0.7);
+}
+/* 손익 색: 손실 빨강 / 이익 초록 (실익 스캔용) */
+.pnl-loss {
+	color: #c62828;
+	font-weight: 700;
+}
+.pnl-gain {
+	color: #2e7d32;
+	font-weight: 700;
+}
+.pnl-na {
+	color: rgb(var(--gray));
+}
+img {
+	max-width: 100%;
+	height: auto;
+	border-radius: var(--radius-s);
+}
+code {
+	padding: 1px 4px;
+	background-color: rgba(var(--gray-light), 0.6);
+	border-radius: var(--radius-s);
+	font-size: 0.9em;
+}
+pre {
+	padding: var(--space-3) var(--space-4);
+	border-radius: var(--radius-s);
+	border: 1px solid var(--border);
+	font-size: 0.9em;
+	line-height: 1.55;
+}
+pre > code {
+	all: unset;
+}
+blockquote {
+	border-left: 3px solid var(--border);
+	padding: 0 0 0 var(--space-3);
+	margin: 0 0 0.875em 0;
+	color: rgb(var(--gray));
+}
+hr {
+	border: none;
+	border-top: 1px solid var(--border);
+	margin: var(--space-5) 0;
+}
+iframe {
+	border-radius: var(--radius-s);
+}
+@media (max-width: 720px) {
+	main {
+		padding: var(--space-4) var(--space-3) var(--space-5);
+	}
+	/* 조밀한 표가 좁은 화면을 밀어내지 않게: 평소엔 어절 줄바꿈,
+	   정말 넘칠 때만 표 안에서 가로 스크롤 */
+	table {
+		display: block;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+.sr-only {
+	border: 0;
+	padding: 0;
+	margin: 0;
+	position: absolute !important;
+	height: 1px;
+	width: 1px;
+	overflow: hidden;
+	clip: rect(1px 1px 1px 1px);
+	clip: rect(1px, 1px, 1px, 1px);
+	clip-path: inset(50%);
+	white-space: nowrap;
+}

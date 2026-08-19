@@ -1,0 +1,26 @@
+---
+interface Props {
+	date: Date;
+	/** 분 단위 시각까지 노출할지 여부. 기본은 날짜만. */
+	withTime?: boolean;
+}
+
+const { date, withTime = false } = Astro.props;
+
+const dateOptions: Intl.DateTimeFormatOptions = {
+	timeZone: 'Asia/Seoul',
+	year: 'numeric',
+	month: 'long',
+	day: 'numeric',
+};
+const timeOptions: Intl.DateTimeFormatOptions = {
+	...dateOptions,
+	hour: 'numeric',
+	minute: '2-digit',
+	hour12: true,
+};
+
+const label = date.toLocaleString('ko-KR', withTime ? timeOptions : dateOptions);
+---
+
+<time datetime={date.toISOString()}>{label}</time>

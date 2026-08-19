@@ -1,0 +1,316 @@
+---
+import { getCollection } from 'astro:content';
+import { SITE_TITLE } from '../consts';
+import FormattedDate from './FormattedDate.astro';
+
+const posts = (await getCollection('blog')).sort(
+	(a, b) => b.data.created_at.valueOf() - a.data.created_at.valueOf(),
+);
+const current = Astro.url.pathname;
+const today = new Date();
+---
+
+<aside id="site-sidebar" class="sidebar" data-state="expanded">
+	<div class="sidebar-top">
+		<a class="site" href="/">
+			<img class="site-mark" src="/favicon.svg" alt="" width="28" height="28" />
+			<span class="site-name">{SITE_TITLE}</span>
+		</a>
+		<button
+			type="button"
+			class="sidebar-toggle"
+			aria-expanded="true"
+			aria-controls="sidebar-body"
+			title="사이드바 접기"
+		>
+			<span class="sr-only">사이드바 접기</span>
+			<svg class="icon-collapse" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+				<path
+					fill="currentColor"
+					d="M9.78 3.22 5 8l4.78 4.78-.72.72L3.56 8l5.5-5.5.72.72Zm3.5 0L8.5 8l4.78 4.78-.72.72L7.06 8l5.5-5.5.72.72Z"
+				></path>
+			</svg>
+			<svg class="icon-expand" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+				<path
+					fill="currentColor"
+					d="M6.22 3.22 11 8l-4.78 4.78.72.72L12.44 8l-5.5-5.5-.72.72Zm-3.5 0L7.5 8 2.72 12.78l.72.72L8.94 8l-5.5-5.5-.72.72Z"
+				></path>
+			</svg>
+		</button>
+	</div>
+	<div class="sidebar-body" id="sidebar-body">
+		<p class="tagline">AI가 조사·정리한 콘텐츠 위주의 블로그</p>
+		<nav>
+			<ul>
+				{
+					posts.map((post) => {
+						const href = `/blog/${post.id}/`;
+						return (
+							<li>
+								<a class:list={[{ active: current === href }]} href={href}>
+									<span class="post-title">{post.data.title}</span>
+									<span class="date">
+										<FormattedDate date={post.data.created_at} />
+									</span>
+								</a>
+							</li>
+						);
+					})
+				}
+			</ul>
+		</nav>
+		<div class="side-foot">
+			<a href="https://github.com/ktseo41" target="_blank" rel="noopener">GitHub</a>
+			<p>&copy; {today.getFullYear()} ktseo41</p>
+		</div>
+	</div>
+</aside>
+
+<script>
+	const STORAGE_KEY = 'sidebar-collapsed';
+
+	function isCollapsedStored(): boolean {
+		try {
+			return localStorage.getItem(STORAGE_KEY) === '1';
+		} catch {
+			return false;
+		}
+	}
+
+	function setCollapsed(collapsed: boolean) {
+		const sidebar = document.getElementById('site-sidebar');
+		const toggle = sidebar?.querySelector<HTMLButtonElement>('.sidebar-toggle');
+		if (!sidebar || !toggle) return;
+
+		const state = collapsed ? 'collapsed' : 'expanded';
+		sidebar.dataset.state = state;
+		document.documentElement.dataset.sidebar = state;
+		toggle.setAttribute('aria-expanded', String(!collapsed));
+		toggle.title = collapsed ? '사이드바 펼치기' : '사이드바 접기';
+		const label = toggle.querySelector('.sr-only');
+		if (label) label.textContent = collapsed ? '사이드바 펼치기' : '사이드바 접기';
+
+		try {
+			localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+		} catch {
+			/* ignore quota / private mode */
+		}
+	}
+
+	function init() {
+		const sidebar = document.getElementById('site-sidebar');
+		const toggle = sidebar?.querySelector<HTMLButtonElement>('.sidebar-toggle');
+		if (!sidebar || !toggle) return;
+
+		// FOUC 방지 스크립트가 이미 적용했을 수 있음 — storage와 동기화
+		setCollapsed(isCollapsedStored());
+
+		if (toggle.dataset.bound === '1') return;
+		toggle.dataset.bound = '1';
+
+		toggle.addEventListener('click', () => {
+			const next = sidebar.dataset.state !== 'collapsed';
+			setCollapsed(next);
+		});
+	}
+
+	init();
+	// View Transitions 등 재진입 대비
+	document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+	.sidebar {
+		--sidebar-width: 260px;
+		box-sizing: border-box;
+		width: var(--sidebar-width);
+		flex-shrink: 0;
+		position: sticky;
+		top: 0;
+		max-height: 100vh;
+		overflow-x: hidden;
+		overflow-y: auto;
+		padding: var(--space-5) var(--space-4);
+		border-right: 1px solid var(--border);
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		transition:
+			width 0.2s ease,
+			padding 0.2s ease,
+			border-color 0.2s ease;
+	}
+	.sidebar-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-2);
+		min-width: 0;
+	}
+	.site {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-width: 0;
+		font-family: var(--font-heading);
+		font-weight: 800;
+		font-size: 1.05em;
+		color: rgb(var(--black));
+		text-decoration: none;
+	}
+	.site-mark {
+		flex-shrink: 0;
+		width: 28px;
+		height: 28px;
+		border-radius: var(--radius-m);
+		display: block;
+	}
+	.site-name {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.sidebar-toggle {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		margin: 0;
+		padding: 0;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-m);
+		background: var(--bg);
+		color: rgb(var(--gray));
+		cursor: pointer;
+	}
+	.sidebar-toggle:hover {
+		color: rgb(var(--black));
+		border-color: rgb(var(--gray));
+	}
+	.sidebar-toggle:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+	}
+	.sidebar-toggle .icon-expand {
+		display: none;
+	}
+	.sidebar-body {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-4);
+		flex: 1;
+		min-height: 0;
+	}
+	.tagline {
+		margin: 0;
+		font-size: 0.8em;
+		line-height: 1.5;
+		color: rgb(var(--gray));
+	}
+	nav ul {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+	nav li {
+		border-top: 1px solid var(--border);
+	}
+	nav a {
+		display: block;
+		padding: var(--space-2) 0;
+		text-decoration: none;
+		color: rgb(var(--gray-dark));
+		font-size: 0.85em;
+		line-height: 1.45;
+	}
+	nav a:hover .post-title {
+		color: var(--accent);
+	}
+	nav a.active .post-title {
+		color: var(--accent);
+		font-weight: 700;
+	}
+	.post-title {
+		display: block;
+	}
+	.date {
+		display: block;
+		margin-top: 2px;
+		font-size: 0.85em;
+		color: rgb(var(--gray));
+	}
+	.side-foot {
+		margin-top: auto;
+		font-size: 0.8em;
+		color: rgb(var(--gray));
+	}
+	.side-foot a {
+		color: rgb(var(--gray));
+	}
+	.side-foot p {
+		margin: var(--space-2) 0 0 0;
+	}
+
+	/*
+	  접힌 상태 스타일은 html[data-sidebar] 기준.
+	  head 인라인 스크립트가 첫 paint 전에 설정하므로 FOUC가 없다.
+	  aside[data-state]는 스크립트 동기화용 미러.
+	*/
+	:global(html[data-sidebar='collapsed']) .sidebar {
+		width: 52px;
+		padding: var(--space-5) var(--space-2);
+		gap: 0;
+	}
+	:global(html[data-sidebar='collapsed']) .site-name,
+	:global(html[data-sidebar='collapsed']) .sidebar-body {
+		display: none;
+	}
+	:global(html[data-sidebar='collapsed']) .sidebar-top {
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-3);
+	}
+	:global(html[data-sidebar='collapsed']) .site {
+		justify-content: center;
+	}
+	:global(html[data-sidebar='collapsed']) .sidebar-toggle .icon-collapse {
+		display: none;
+	}
+	:global(html[data-sidebar='collapsed']) .sidebar-toggle .icon-expand {
+		display: block;
+	}
+
+	@media (max-width: 960px) {
+		.sidebar {
+			position: static;
+			width: 100%;
+			max-height: none;
+			border-right: none;
+			border-bottom: 1px solid var(--border);
+			/* 모바일에서는 폭 애니메이션 대신 본문 토글만 */
+			transition: none;
+		}
+		:global(html[data-sidebar='collapsed']) .sidebar {
+			width: 100%;
+			padding: var(--space-4);
+		}
+		:global(html[data-sidebar='collapsed']) .sidebar-top {
+			flex-direction: row;
+			align-items: center;
+		}
+		:global(html[data-sidebar='collapsed']) .site-name {
+			display: inline;
+		}
+		:global(html[data-sidebar='collapsed']) .sidebar-body {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sidebar {
+			transition: none;
+		}
+	}
+</style>
