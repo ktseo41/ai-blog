@@ -4,8 +4,8 @@
 
 ## 1. 배포 (GitHub 연동 자동 빌드 — 2026-07-30부터 현행)
 
-`ktseo41/ai-blog` 저장소가 Pages 프로젝트에 연결돼 있어 **main에 push하면 Cloudflare가 알아서 빌드·배포**한다.
-따로 실행할 명령은 없다. 프로덕션 URL은 연동 전과 같은 https://ai-blog-kwm.pages.dev 이고,
+`ktseo41/blog-with-ai` 저장소가 Pages 프로젝트에 연결돼 있어 **main에 push하면 Cloudflare가 알아서 빌드·배포**한다.
+따로 실행할 명령은 없다. 프로덕션 URL은 연동 전과 같은 https://blog-with-ai.pages.dev 이고,
 Access 설정도 도메인이 안 바뀌었으므로 그대로 유효하다.
 
 대시보드 빌드 설정값:
@@ -31,10 +31,10 @@ Access 설정도 도메인이 안 바뀌었으므로 그대로 유효하다.
 
 ```sh
 npm run build
-npx wrangler pages deploy dist --project-name ai-blog --branch main
+npx wrangler pages deploy dist --project-name blog-with-ai --branch main
 ```
 
-- 배포 목록: `npx wrangler pages deployment list --project-name ai-blog`
+- 배포 목록: `npx wrangler pages deployment list --project-name blog-with-ai`
 - 로그인 상태 확인: `npx wrangler whoami` — **계정이 <운영 계정 이메일>인지 반드시 본다.**
   다른 계정 토큰이 저장돼 있으면 배포가 `Authentication error [code: 10000]`으로 떨어진다
   (2026-07-30에 다른 계정 토큰이 물려 있어 실제로 겪음). 재로그인은 `npx wrangler login`.
@@ -49,9 +49,9 @@ IdP(이미 등록해 둔 Google 프리셋)로 로그인하고 정책(이메일 a
 ### 가장 쉬운 길 — Pages 대시보드의 원클릭 "Access policy"
 
 1. dash.cloudflare.com → Workers & Pages → `ai-blog` → **Settings** → **General** 아래 **Access policy** → **Enable**.
-2. 기본값은 *프리뷰 배포만* 보호한다. 프로덕션(`ai-blog-kwm.pages.dev`)까지 막으려면
+2. 기본값은 *프리뷰 배포만* 보호한다. 프로덕션(`blog-with-ai.pages.dev`)까지 막으려면
    안내 링크를 따라 Zero Trust 대시보드에서 생성된 앱의 도메인에
-   `ai-blog-kwm.pages.dev` 와 `*.ai-blog-kwm.pages.dev` 둘 다 추가.
+   `blog-with-ai.pages.dev` 와 `*.blog-with-ai.pages.dev` 둘 다 추가.
 3. Zero Trust → Access → Applications → 해당 앱 → **Policies**: Allow / Include → Emails → `<운영 계정 이메일>`.
 4. 같은 앱의 **Authentication** 탭에서 로그인 방식을 Google만 남기면 (Accept all identity providers 끄기)
    방문 시 바로 Google 로그인으로 간다.
@@ -60,7 +60,7 @@ IdP(이미 등록해 둔 Google 프리셋)로 로그인하고 정책(이메일 a
 
 Zero Trust → Access → Applications → **Add an application** → Self-hosted:
 
-- Application domain: `ai-blog-kwm.pages.dev` + 추가로 `*.ai-blog-kwm.pages.dev`
+- Application domain: `blog-with-ai.pages.dev` + 추가로 `*.blog-with-ai.pages.dev`
 - Identity providers: Google (기존 프리셋 선택)
 - Policy: Action **Allow**, Include **Emails** = `<운영 계정 이메일>`
 - Session duration: 취향대로 (예: 1 week)
@@ -84,10 +84,10 @@ export CF_ACCOUNT=<CF_ACCOUNT_ID>
 curl -s -X POST "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/access/apps" \
   -H "Authorization: Bearer $CF_API_TOKEN" -H "Content-Type: application/json" \
   -d '{
-    "name": "ai-blog",
+    "name": "blog-with-ai",
     "type": "self_hosted",
-    "domain": "ai-blog-kwm.pages.dev",
-    "self_hosted_domains": ["ai-blog-kwm.pages.dev", "*.ai-blog-kwm.pages.dev"],
+    "domain": "blog-with-ai.pages.dev",
+    "self_hosted_domains": ["blog-with-ai.pages.dev", "*.blog-with-ai.pages.dev"],
     "allowed_idps": ["<google-idp-uuid>"],
     "auto_redirect_to_identity": true,
     "session_duration": "168h"

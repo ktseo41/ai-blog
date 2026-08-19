@@ -6,7 +6,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://ai-blog-kwm.pages.dev',
+	site: 'https://blog-with-ai.pages.dev',
 	integrations: [mdx(), sitemap()],
 	redirects: {
 		'/blog': '/',
